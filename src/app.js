@@ -1,3 +1,4 @@
+require("dotenv").config();
 const compression = require("compression");
 const express = require("express");
 const { default: helmet } = require("helmet");
@@ -9,17 +10,30 @@ const app = express();
 app.use(morgan("dev")); //  use for development
 app.use(helmet());
 app.use(compression());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 //  init database
+require("./db/init.mongodb");
+// const { checkOverload } = require("./helpers/check.connect");
+// checkOverload();
 
 //  init routers
+app.use("/", require("./routers"));
 
 //  handling error
-app.get("/", (req, res, next) => {
-  const strCompress = "asdfasdfasdf";
-  return res.status(200).json({
-    message: "Hello World!",
-    metadata: strCompress.repeat(100000),
+app.use((req, res, next) => {
+  const error = new Error("Not Found!");
+  error.status = 404;
+  next(error);
+});
+
+app.use((error, req, res, next) => {
+  const status = error.status || 500;
+  return res.status(status).json({
+    status: "error",
+    code: status,
+    message: error.message || "Internal Server Error!",
   });
 });
 
