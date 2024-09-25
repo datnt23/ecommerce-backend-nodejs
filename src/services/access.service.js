@@ -8,10 +8,10 @@ const { createTokenPair } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 
 const ROLES = {
-  shop: "SHOP",
-  writer: "WRITER",
-  editor: "EDITOR",
-  admin: "ADMIN",
+  SHOP: "SHOP",
+  WRITER: "WRITER",
+  EDITOR: "EDITOR",
+  ADMIN: "ADMIN",
 };
 
 class AccessService {
@@ -32,7 +32,7 @@ class AccessService {
         name,
         email,
         password: passwordHash,
-        roles: [ROLES.shop],
+        roles: [ROLES.SHOP],
       });
 
       if (newShop) {
@@ -62,10 +62,6 @@ class AccessService {
             message: "Public Key String error!",
           };
         }
-
-        console.log(`Public Key String::`, publicKeyString);
-        const publicKeyObject = crypto.createPublicKey(publicKeyString);
-        console.log(`Public Key Object::`, publicKeyObject);
 
         //  create token pair
         const tokens = await createTokenPair(
