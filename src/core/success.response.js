@@ -27,20 +27,22 @@ class SuccessResponse {
   }
 }
 
-class OkResponse extends SuccessResponse {
-  constructor(message, metadata) {
-    super(message, metadata);
+class OK extends SuccessResponse {
+  constructor({ message, metadata }) {
+    super({ message, metadata });
   }
 }
-class CreatedResponse extends SuccessResponse {
+class CREATED extends SuccessResponse {
   constructor({
+    options = {},
     message,
     statusCode = StatusCode.CREATED,
     reasonStatusCode = ReasonStatusCode.CREATED,
     metadata,
   }) {
-    super(message, statusCode, reasonStatusCode, metadata);
+    super({ message, statusCode, reasonStatusCode, metadata });
+    this.options = options;
   }
 }
 
-module.exports = { OkResponse, CreatedResponse };
+module.exports = { OK, CREATED };
