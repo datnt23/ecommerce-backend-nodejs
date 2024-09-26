@@ -4,9 +4,13 @@ const shopModel = require("../models/shop.model");
 const bcrypt = require("bcrypt");
 const crypto = require("node:crypto");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../auth/authUtils");
+const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
-const { BadRequestError, AuthFailureError } = require("../core/error.response");
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbiddenError,
+} = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
 
 const ROLES = {
@@ -17,6 +21,63 @@ const ROLES = {
 };
 
 class AccessService {
+  /*
+   Check this token used?
+  */
+  static handlerRefreshToken = async (refreshToken) => {
+    //  Check this token is use
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    );
+    if (foundToken) {
+      //  decode see who are you?
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey
+      );
+      console.log({ userId, email });
+      //  delete key
+      await KeyTokenService.deleteKeyById(userId);
+      throw new ForbiddenError("Something wrong happened! Please relogin!");
+    }
+    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+    if (!holderToken) throw new AuthFailureError("Shop not registered 1!");
+    //  verifyToken
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey
+    );
+    //  check UserId
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registered 2!");
+    //  create new token
+    const tokens = await createTokenPair(
+      { userId, email },
+      holderToken.publicKey,
+      holderToken.privateKey
+    );
+    //  update token
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken, //  used to get new token
+      },
+    });
+    return {
+      user: {
+        userId,
+        email,
+      },
+      tokens,
+    };
+  };
+
+  static logout = async (keyStore) => {
+    const delKey = await KeyTokenService.removeKeyById(keyStore._id);
+    return delKey;
+  };
   /*
     1 - check email in db
     2 - match password
@@ -29,8 +90,8 @@ class AccessService {
     const foundShop = await findByEmail({ email });
     if (!foundShop) throw new BadRequestError("Shop not registered!");
     //  2
-    const matchPassword = bcrypt.compare(password, foundShop.password);
-    if (!matchPassword) throw new AuthFailureError("Authentication error!");
+    const matchPassword = await bcrypt.compare(password, foundShop.password);
+    if (!matchPassword) throw new AuthFailureError("Password is incorrect!");
     //  3
     //  created privateKey, publicKey
     const privateKey = crypto.randomBytes(64).toString("hex");

@@ -1,5 +1,6 @@
 "use strict";
 
+const { BadRequestError } = require("../core/error.response");
 const { findById } = require("../services/apiKey.service");
 
 const HEADER = {
@@ -12,18 +13,14 @@ const apiKey = async (req, res, next) => {
     const key = req.headers[HEADER.API_KEY]?.toString();
 
     if (!key) {
-      return res.status(403).json({
-        message: "Forbidden Error!",
-      });
+      throw new BadRequestError("Forbidden Error!");
     }
 
     //  check objKey
     const objKey = await findById(key);
 
     if (!objKey) {
-      return res.status(403).json({
-        message: "Forbidden Error!",
-      });
+      throw new BadRequestError("Forbidden Error!");
     }
     req.objKey = objKey;
     return next();
@@ -33,30 +30,19 @@ const apiKey = async (req, res, next) => {
 const permission = (permission) => {
   return (req, res, next) => {
     if (!req.objKey.permissions) {
-      return res.status(403).json({
-        message: "Permission Denied!",
-      });
+      throw new BadRequestError("Permission Denied!");
     }
 
-    console.log("Permission::", req.objKey.permissions);
+    // console.log("Permission::", req.objKey.permissions);
     const validPermission = req.objKey.permissions.includes(permission);
     if (!validPermission) {
-      return res.status(403).json({
-        message: "Permission Denied!",
-      });
+      throw new BadRequestError("Permission Denied!");
     }
     return next();
-  };
-};
-
-const asyncHandler = (fn) => {
-  return (req, res, next) => {
-    fn(req, res, next).catch(next);
   };
 };
 
 module.exports = {
   apiKey,
   permission,
-  asyncHandler,
 };
