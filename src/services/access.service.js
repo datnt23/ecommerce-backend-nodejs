@@ -12,6 +12,7 @@ const {
   ForbiddenError,
 } = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
+const { keys } = require("lodash");
 
 const ROLES = {
   SHOP: "SHOP",
@@ -70,6 +71,43 @@ class AccessService {
         userId,
         email,
       },
+      tokens,
+    };
+  };
+  //  v2
+  static handlerRefreshTokenV2 = async ({ refreshToken, user, keyStore }) => {
+    const { userId, email } = user;
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      await KeyTokenService.deleteKeyById(userId);
+      throw new ForbiddenError("Something wrong happened! Please relogin!");
+    }
+
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError("Shop not registered!");
+
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registered!");
+    //  Check this token is use
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    );
+    //  create new token
+    const tokens = await createTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+    //  update token
+    await keyStore.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken, //  used to get new token
+      },
+    });
+    return {
+      user,
       tokens,
     };
   };

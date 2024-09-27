@@ -29,10 +29,11 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  const status = error.status || 500;
-  return res.status(status).json({
+  const statusCode = error.status || 500;
+  return res.status(statusCode).json({
     status: "error",
-    code: status,
+    code: statusCode,
+    stack: error.stack,
     message: error.message || "Internal Server Error!",
   });
 });
