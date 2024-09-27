@@ -68,21 +68,12 @@ const authentication = asyncHandler(async (req, res, next) => {
 });
 
 const authenticationV2 = asyncHandler(async (req, res, next) => {
-  /*
-    1 - check userId missing?
-    2 - get accessToken
-    3 - verifyToken
-    4 - check user in db
-    5 - check keyStore with this userId?
-    6 - OK all => return next()
-  */
-  // 1
   const userId = req.headers[HEADER.CLIENT_ID];
   if (!userId) throw new AuthFailureError("Invalid Request!");
-  //  2
+
   const keyStore = await findByUserId(userId);
   if (!keyStore) throw new NotFoundError("Not found key!");
-  //  3
+
   if (req.headers[HEADER.REFRESH_TOKEN]) {
     try {
       const refreshToken = req.headers[HEADER.REFRESH_TOKEN];
@@ -106,6 +97,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
     if (userId !== decodeUser.userId)
       throw new AuthFailureError("Invalid UserId!");
     req.keyStore = keyStore;
+    req.user = decodeUser;
     return next();
   } catch (error) {
     throw error;

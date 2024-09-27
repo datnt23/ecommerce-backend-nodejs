@@ -19,7 +19,7 @@ require("./db/init.mongodb");
 // checkOverload();
 
 //  init routers
-app.use("/", require("./routers"));
+app.use("/api/v1", require("./routers"));
 
 //  handling error
 app.use((req, res, next) => {
@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 app.use((error, req, res, next) => {
   const statusCode = error.status || 500;
   return res.status(statusCode).json({
-    status: "error",
+    status: "error server",
     code: statusCode,
     stack: error.stack,
     message: error.message || "Internal Server Error!",
