@@ -10,6 +10,7 @@ router.use(apiKey);
 //  check permission
 router.use(permission("0"));
 
+router.use("/discount", require("./discount"));
 router.use("/product", require("./product"));
 router.use("/", require("./access"));
 
