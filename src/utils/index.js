@@ -27,6 +27,8 @@ const removeUndefinedObject = (obj) => {
   return obj;
 };
 
+/*  em nghĩ là hàm updateNestedObjectParser nên tối ưu một chút vì lỡ đâu có 3 4 populate nested nhau dẫn đến forEach phải 3 4 lần theo 
+    em sữa lại thành như này 
 const updateNestedObjectParser = (obj, result = {}) => {
   Object.keys(obj || {}).forEach((key) => {
     if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
@@ -38,6 +40,22 @@ const updateNestedObjectParser = (obj, result = {}) => {
       result[key] = obj[key];
     }
   });
+  return result;
+};*/
+// =>
+const updateNestedObjectParser = (obj, prefix = "") => {
+  const result = {};
+  Object.keys(obj).forEach((key) => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (obj[key] === null || obj[key] === undefined) {
+      console.log(`ingore key`, key);
+    } else if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+      Object.assign(result, updateNestedObjectParser(obj[key], newKey));
+    } else {
+      result[newKey] = obj[key];
+    }
+  });
+
   return result;
 };
 

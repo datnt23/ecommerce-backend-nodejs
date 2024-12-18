@@ -10,7 +10,9 @@ router.use(apiKey);
 //  check permission
 router.use(permission("0"));
 
+router.use("/checkout", require("./checkout"));
 router.use("/discount", require("./discount"));
+router.use("/cart", require("./cart"));
 router.use("/product", require("./product"));
 router.use("/", require("./access"));
 

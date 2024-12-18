@@ -1,8 +1,9 @@
-require("dotenv").config();
 const compression = require("compression");
 const express = require("express");
 const { default: helmet } = require("helmet");
 const morgan = require("morgan");
+const logEvents = require("./helpers/logEvents.");
+
 const app = express();
 
 //  init middlewares
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  logEvents(error.message);
   const statusCode = error.status || 500;
   return res.status(statusCode).json({
     status: "error server",

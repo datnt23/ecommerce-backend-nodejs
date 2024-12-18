@@ -28,3 +28,7 @@ Content-Type: application/json
 x-api-key:  3fe4617f6e9dd57c08edb9f08efe6d5c8420c576eb0a3e4aa99d2bea3412449ab391cd3ea369fd65347d9a3af6c487670925c0cabeac71f6f4bb56d20d331c89
 x-client-id: 66f44a5f70d0903fc70c22ca
 Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY0NGE1ZjcwZDA5MDNmYzcwYzIyY2EiLCJlbWFpbCI6ImRlbW9AZ21haWwuY29tIiwiaWF0IjoxNzI3MzMyNDUxLCJleHAiOjE3Mjc1MDUyNTF9.r8O5rh0ACtH116gH7QyWs03g4q7FEzbQcCP-OUhajCo
+
+
+###
+GET {{url_dev}}/shop
